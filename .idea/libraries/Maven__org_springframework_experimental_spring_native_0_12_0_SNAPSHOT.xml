@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.springframework.experimental:spring-native:0.12.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/experimental/spring-native/0.12.0-SNAPSHOT/spring-native-0.12.0-20220525.115459-17.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/experimental/spring-native/0.12.0-SNAPSHOT/spring-native-0.12.0-20220525.115459-17-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/experimental/spring-native/0.12.0-SNAPSHOT/spring-native-0.12.0-20220525.115459-17-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
