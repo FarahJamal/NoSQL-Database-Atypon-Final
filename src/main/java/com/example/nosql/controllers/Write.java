@@ -1,34 +1,58 @@
 package com.example.nosql.controllers;
 
+import com.example.nosql.authentication.Encryption;
 import com.example.nosql.authentication.GenerateAuthToken;
+import com.example.nosql.cache.LFUCache;
 import com.example.nosql.config.HashHelper;
+import com.example.nosql.database.DatabaseDAO;
 import com.example.nosql.database.SchemasDAO;
+import com.example.nosql.middleware.AdminAuth;
+import com.example.nosql.middleware.AuthenticationLogin;
 import com.example.nosql.reacord.helper.Attributes;
 import com.example.nosql.reacord.helper.NullRecord;
 import com.example.nosql.reacord.helper.Record;
-import org.springframework.expression.ParseException;
+import com.example.nosql.schemas.SchemaBuilder;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/")
 public class Write {
+    private static Attributes getAttribute(Object key, Map<String, Object> body) {
+        if (body.get(key) instanceof List) {
+            ArrayList<Attributes> nestedAttribute = new ArrayList<>();
+            for (Object data : (ArrayList<?>) body.get(key)) {
+                LinkedHashMap<String, Object> smallAtt = (LinkedHashMap<String, Object>) data;
+                Map.Entry<String, Object> entry = smallAtt.entrySet().iterator().next();
+                Attributes currentAtt = new Attributes(entry.getKey(), entry.getValue());
+                nestedAttribute.add(currentAtt);
+            }
+            Attributes attribute = new Attributes(key.toString(), nestedAttribute);
+            return attribute;
+        } else {
+            Attributes attribute = new Attributes(key.toString(), body.get(key));
+            return attribute;
+        }
+    }
 
     @PostMapping("/login")
-    public Object login(@RequestBody Map<String, Object> body) throws IOException, ParseException, org.json.simple.parser.ParseException {
+    public Object login(@RequestBody Map<String, Object> body) throws IOException, ParseException {
         String username = (String) body.get("username");
         String password = (String) body.get("password");
         Attributes attribute = new Attributes("username", username);
         String hash = HashHelper.hashRecord("users", attribute.getKey());
-//        LFUCache.getInstance().remove(hash);
+        LFUCache.getInstance().remove(hash);
         SchemasDAO schemaDAO = (SchemasDAO) SchemasDAO.getInstance("users");
         Object user = schemaDAO.getByAttribute(attribute);
         if (user instanceof NullRecord)
@@ -40,6 +64,59 @@ public class Write {
             return tokenAuth.generate(record.getRecordID());
         } else {
             return new ResponseEntity("invalid credentials ", HttpStatus.FORBIDDEN);
+        }
+    }
+
+
+    @PostMapping(
+            value = "/{schema}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object add(
+            @PathVariable("schema") String schema,
+            @RequestBody Map<String, Object> body,
+            @RequestHeader Map<String, String> headers)
+            throws IOException, org.json.simple.parser.ParseException {
+        List<Attributes> attributes = new ArrayList<>();
+        String authToken = headers.get("authorization");
+        System.out.println(headers);
+        if (!AuthenticationLogin.isLoggedIn(authToken)) {
+            return new ResponseEntity("Login first ", HttpStatus.FORBIDDEN);
+        }
+        for (Object key : body.keySet()) {
+            Attributes attribute = getAttribute(key, body);
+            attributes.add(attribute);
+        }
+        DatabaseDAO dao = SchemasDAO.getInstance(schema);
+        Record record =new Record(attributes);
+        if (dao.add(record)) {
+            return record.toJson().toJSONString();
+        } else {
+            return new ResponseEntity("Bad request",HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping(
+            value="/schema/{schema}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object createSchema(
+            @RequestBody String body,
+            @PathVariable("schema") String schema,
+            @RequestHeader Map<String, String> headers)
+            throws IOException, org.json.simple.parser.ParseException {
+        String authToken = headers.get("authorization");
+
+        if (authToken.length() <= 0) return new ResponseEntity("forbidden",HttpStatus.FORBIDDEN);
+        String decrypted = Encryption.decrypt(authToken, "AtyponFinal");
+        if (decrypted == null) return new ResponseEntity("forbidden",HttpStatus.FORBIDDEN);
+        if (!AdminAuth.checkAuth(decrypted)) return new ResponseEntity("forbidden",HttpStatus.FORBIDDEN);
+        JSONParser parser = new JSONParser();
+        JSONObject json = (JSONObject) parser.parse(body);
+        if (SchemaBuilder.createSchema(schema, json)) {
+            return json;
+        } else {
+            return new ResponseEntity("Bad request",HttpStatus.BAD_REQUEST);
         }
     }
 }

@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "createdAt": "2022-06-07 at 15:08:55 EEST",
+      "major": "technical support",
+      "_id": "ad3439c3-3a68-4e1a-8a82-9c5c250a4d42",
+      "username": "Ahmad Ibrahim"
+    },
+    {
+      "createdAt": "2022-06-07 at 15:01:02 EEST",
+      "major": "ce",
+      "_id": "dd83b1da-191d-4f66-a197-3d07254b6a93",
+      "username": "awq"
+    },
+    {
+      "createdAt": "2022-06-07 at 15:08:55 EEST",
+      "major": "technical support",
+      "_id": "ad3439c3-3a68-4e1a-8a82-9c5c250a4d55",
+      "username": "Suaad"
+    }
+  ]
+}

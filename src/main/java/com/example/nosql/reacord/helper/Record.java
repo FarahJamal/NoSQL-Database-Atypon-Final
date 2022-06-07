@@ -1,8 +1,8 @@
 package com.example.nosql.reacord.helper;
 
 import com.example.nosql.database.RecordProxy;
+import org.json.JSONArray;
 import org.json.simple.JSONObject;
-import org.springframework.boot.configurationprocessor.json.JSONArray;
 
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +10,15 @@ import java.util.List;
 public class Record implements RecordDAO {
     protected List<Attributes> data;
     private String recordID = "", createdAt;
+
+    @Override
+    public String toString() {
+        return "Record{" +
+                "data=" + data.toArray().toString() +
+                ", recordID='" + recordID + '\'' +
+                ", createdAt='" + createdAt + '\'' +
+                '}';
+    }
 
     public Record(List<Attributes> attributeList) {
         this.data = attributeList;
@@ -56,4 +65,7 @@ public class Record implements RecordDAO {
     public boolean isNull() {
         return false;
     }
+
+
+
 }

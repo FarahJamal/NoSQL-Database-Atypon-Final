@@ -8,4 +8,6 @@ public interface RecordDAO {
     public JSONObject toJson();
 
     public boolean isNull();
+
+
 }

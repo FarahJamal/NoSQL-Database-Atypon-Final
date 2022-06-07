@@ -6,7 +6,7 @@ import com.example.nosql.reacord.helper.RecordDAO;
 
 import java.io.IOException;
 
-public interface DAO {
+public interface DatabaseDAO {
     public Object getAll();
 
     public Boolean add(Record record) throws IOException;

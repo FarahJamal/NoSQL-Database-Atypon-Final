@@ -72,6 +72,7 @@ public class FileIO {
     }
 
     public static void createFile(String fileName) throws IOException {
+        System.out.println(ResourcesPath.getDevelopmentDataResource() + fileName + ".json");
         File file = new File(ResourcesPath.getDevelopmentDataResource() + fileName + ".json");
         if (file.createNewFile()) {
             System.out.println("File created: " + file.getName());

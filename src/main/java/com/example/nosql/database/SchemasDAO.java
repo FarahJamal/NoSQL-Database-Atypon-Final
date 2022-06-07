@@ -1,19 +1,23 @@
 package com.example.nosql.database;
 
+import com.example.nosql.cache.LFUCache;
 import com.example.nosql.config.FileIO;
+import com.example.nosql.config.HashHelper;
 import com.example.nosql.reacord.helper.Attributes;
+import com.example.nosql.reacord.helper.NullRecord;
 import com.example.nosql.reacord.helper.Record;
 import com.example.nosql.reacord.helper.RecordDAO;
 import com.example.nosql.schemas.Schema;
+import org.json.JSONArray;
 import org.springframework.expression.ParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SchemasDAO implements DAO {
+public class SchemasDAO implements DatabaseDAO {
     private ConcurrentHashMap<String, Record> data;
-    //    private LFUCache cache = LFUCache.getInstance();
+        private LFUCache cache = LFUCache.getInstance();
     private String schemaName;
     private Schema schema;
 
@@ -24,7 +28,7 @@ public class SchemasDAO implements DAO {
         this.data = parseFile();
     }
 
-    public static DAO getInstance(String schemaName) throws IOException, ParseException, org.json.simple.parser.ParseException {
+    public static DatabaseDAO getInstance(String schemaName) throws IOException, ParseException, org.json.simple.parser.ParseException {
         return new SchemasDAO(schemaName);
     }
 
@@ -49,26 +53,88 @@ public class SchemasDAO implements DAO {
 
     @Override
     public Object getAll() {
-        return null;
+        String hashing= HashHelper.hashAll(schemaName);
+        Object cacheResult=cache.get(hashing);
+        if(cacheResult==null){
+            JSONArray jsonArray=new JSONArray();
+            for(Object record:data.values()){
+                Record recordValue= (Record) record;
+                jsonArray.put(recordValue.toJson());
+            }
+            cache.put(hashing,jsonArray);
+            return  jsonArray;
+
+        }
+        return cacheResult;
     }
 
     @Override
     public Boolean add(Record record) throws IOException {
-        return null;
+        if (!schema.isValidRecord(record)) {
+            System.out.println("false");
+
+            return false;
+        }
+        String hash = HashHelper.hashRecord(schemaName, record.getRecordID());
+        data.put(record.getRecordID(), record);
+        cache.put(hash, record);
+        cache.remove(HashHelper.hashAll(schemaName));
+        FileIO.writeToJson(schemaName, data.values()); // synchronized
+        System.out.println("true");
+        return true;
     }
 
     @Override
     public Object getByAttribute(Attributes attribute) {
-        return null;
+        String hash = HashHelper.hashRecord(schemaName, attribute.getKey());
+        Object cacheResult = cache.get(hash);
+        if (cacheResult == null) {
+            ArrayList<Record> result = new ArrayList<>();
+            for (Record record : data.values()) {
+                for (Attributes currentAttribute : record.getAttributes()) {
+                    if (attribute.equals(currentAttribute)) {
+                        result.add(record);
+                    }
+                }
+            }
+            if (result.size() == 0) {
+                return NullRecord.getInstance();
+            }
+            if (result.size() > 0) cache.put(hash, result);
+            return result;
+        } else return cacheResult;
     }
 
     @Override
     public RecordDAO update(Record record) throws IOException {
-        return null;
+        if (record == null) throw new NullPointerException("record cannot be null");
+        Record oldRecord = data.get(record.getRecordID());
+        synchronized (this) {
+            for (Attributes attribute : record.getAttributes()) {
+                for (Attributes oldAttribute : oldRecord.getAttributes()) {
+                    if (attribute.getKey().equals(oldAttribute.getKey())) {
+                        oldAttribute.setValue(attribute.getValue());
+                    }
+                }
+            }
+            add(oldRecord);
+            FileIO.writeToJson(schemaName, data.values());
+
+            return oldRecord;
+        }
     }
 
     @Override
     public RecordDAO delete(String recordID) throws IOException {
-        return null;
+        if (recordID == null) throw new NullPointerException("ID cannot be null");
+        if (data.get(recordID) == null) return NullRecord.getInstance();
+        String hash = HashHelper.hashRecord(schemaName, recordID);
+        String schemaHash = HashHelper.hashAll(schemaName);
+        Record record = data.get(recordID);
+        data.remove(recordID);
+        cache.remove(hash);
+        cache.remove(schemaHash);
+        FileIO.writeToJson(schemaName, data.values());
+        return record;
     }
 }
