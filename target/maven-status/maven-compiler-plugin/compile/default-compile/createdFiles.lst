@@ -22,5 +22,6 @@ com/example/nosql/controllers/Read.class
 com/example/nosql/reacord/helper/Attributes.class
 com/example/nosql/authentication/GenerateAuthToken.class
 com/example/nosql/cache/LFUCache.class
+com/example/nosql/endpoints/EndPoint.class
 com/example/nosql/database/SchemasDAO.class
 com/example/nosql/middleware/AuthenticationLogin.class

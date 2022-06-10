@@ -3,9 +3,9 @@
     {
       "createdAt": "2022-06-07 at 12:18:31 EEST",
       "password": "Farah980",
-      "role": "admin",
       "_id": "739b56cd-c8ad-4c42-8ccf-89af1e00d188",
-      "username": "farah"
+      "username": "farah",
+      "role": "admin"
     }
   ]
 }

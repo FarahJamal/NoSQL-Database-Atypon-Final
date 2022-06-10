@@ -78,7 +78,7 @@ public class Read {
             return new ResponseEntity("Login first ", HttpStatus.FORBIDDEN);
         }
         File directory =
-                new File(ResourcesPath.getDevelopmentSchemaResource()); // current directory
+                new File(ResourcesPath.getProductionSchemaResource()); // current directory
         File[] files = directory.listFiles();
         JSONArray jsonArray = new JSONArray();
         JSONParser jsonParser = new JSONParser();

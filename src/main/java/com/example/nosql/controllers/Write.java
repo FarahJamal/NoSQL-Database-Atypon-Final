@@ -51,16 +51,29 @@ public class Write {
         String username = (String) body.get("username");
         String password = (String) body.get("password");
         Attributes attribute = new Attributes("username", username);
-        String hash = HashHelper.hashRecord("users", attribute.getKey());
-        LFUCache.getInstance().remove(hash);
+        Attributes attribute2 = new Attributes("password", password);
+
+        String usernameHash = HashHelper.hashRecord("users", attribute.getKey());
+        String passwordHash = HashHelper.hashRecord("users", attribute2.getKey());
+
+
+        LFUCache.getInstance().remove(usernameHash);
+        LFUCache.getInstance().remove(passwordHash);
+
         SchemasDAO schemaDAO = (SchemasDAO) SchemasDAO.getInstance("users");
-        Object user = schemaDAO.getByAttribute(attribute);
-        if (user instanceof NullRecord)
+        Object usernameValue = schemaDAO.getByAttribute(attribute);
+        Object passwordValue = schemaDAO.getByAttribute(attribute2);
+
+
+        if (usernameValue instanceof NullRecord || passwordValue instanceof  NullRecord)
             return new ResponseEntity("invalid credentials ", HttpStatus.FORBIDDEN);
-        ArrayList<Record> recordArrayList = (ArrayList<Record>) user;
-        if (recordArrayList.size() > 0 ) {
+
+        ArrayList<Record> usernameRecordArrayList = (ArrayList<Record>) usernameValue;
+        ArrayList<Record> passwordRecordArrayList = (ArrayList<Record>) passwordValue;
+
+        if (usernameRecordArrayList.size() > 0 && passwordRecordArrayList.size()>0) {
             GenerateAuthToken tokenAuth = GenerateAuthToken.getInstance();
-            Record record = recordArrayList.get(0);
+            Record record = usernameRecordArrayList.get(0);
             return tokenAuth.generate(record.getRecordID());
         } else {
             return new ResponseEntity("invalid credentials ", HttpStatus.FORBIDDEN);
@@ -76,7 +89,7 @@ public class Write {
             @PathVariable("schema") String schema,
             @RequestBody Map<String, Object> body,
             @RequestHeader Map<String, String> headers)
-            throws IOException, org.json.simple.parser.ParseException {
+            throws IOException, ParseException {
         List<Attributes> attributes = new ArrayList<>();
         String authToken = headers.get("authorization");
         System.out.println(headers);
@@ -104,7 +117,7 @@ public class Write {
             @RequestBody String body,
             @PathVariable("schema") String schema,
             @RequestHeader Map<String, String> headers)
-            throws IOException, org.json.simple.parser.ParseException {
+            throws IOException, ParseException {
         String authToken = headers.get("authorization");
 
         if (authToken.length() <= 0) return new ResponseEntity("forbidden",HttpStatus.FORBIDDEN);

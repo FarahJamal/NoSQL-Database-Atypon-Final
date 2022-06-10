@@ -28,7 +28,7 @@ public class Schema {
 
     private JSONObject parseJson(String schemaName) throws IOException, ParseException, org.json.simple.parser.ParseException {
         FileReader fileReader =
-                new FileReader(ResourcesPath.getDevelopmentSchemaResource() + schemaName + ".json");
+                new FileReader(ResourcesPath.getProductionSchemaResource() + schemaName + ".json");
         JSONParser jsonParser = new JSONParser();
         Object json = jsonParser.parse(fileReader);
         return (JSONObject) json;

@@ -11,10 +11,10 @@ public class SchemaBuilder {
     public static boolean createSchema(String schemaName, JSONObject json) {
         try {
             File file =
-                    new File(ResourcesPath.getDevelopmentSchemaResource() + schemaName + ".json");
+                    new File(ResourcesPath.getProductionSchemaResource() + schemaName + ".json");
             FileWriter fileWriter =
                     new FileWriter(
-                            ResourcesPath.getDevelopmentSchemaResource() + schemaName + ".json");
+                            ResourcesPath.getProductionSchemaResource() + schemaName + ".json");
             if (!isValidTypes(json)) {
                 return false;
             }
