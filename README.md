@@ -5,7 +5,7 @@ Final Project
 Build a document DB that fulfills that following requirements:
 - Reads are the majority of transactions (from any node in a cluster)
 - Writes are done only rarely (only through a connection to the database controller/connection manager).
-- Has to have fast reads (e.g. caching in memory).
+- Has to have fast reads (e.g. com.example.nosql.caching in memory).
 - Document based database (json objects).
 - Each document type has a json object schema and each object schema should belong to a database
 schema.

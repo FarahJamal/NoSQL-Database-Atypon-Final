@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nosql-database-atypon-final
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: nosql-database-atypon-final
+  template:
+    metadata:
+      labels:
+        app: nosql-database-atypon-final
+    spec:
+      containers:
+        - name: nosql-database-atypon-final
+          image: 9982054831/nosql-database:latest
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 4444
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nosql-database-atypon-final
+spec:
+  type: LoadBalancer
+  selector:
+    app: nosql-database-atypon-final
+  ports:
+    - port: 3030
+      targetPort: 4444
