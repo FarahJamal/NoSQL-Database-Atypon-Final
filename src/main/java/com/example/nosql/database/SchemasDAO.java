@@ -107,9 +107,10 @@ public class SchemasDAO implements DatabaseDAO {
 
     @Override
     public RecordDAO update(Record record) throws IOException {
-        if (record == null) throw new NullPointerException("record cannot be null");
-        Record oldRecord = data.get(record.getRecordID());
+
         synchronized (this) {
+            if (record == null) throw new NullPointerException("record cannot be null");
+            Record oldRecord = data.get(record.getRecordID());
             for (Attributes attribute : record.getAttributes()) {
                 for (Attributes oldAttribute : oldRecord.getAttributes()) {
                     if (attribute.getKey().equals(oldAttribute.getKey())) {

@@ -14,7 +14,7 @@ public class Encryption {
     private static byte[] key;
 
     public static void prepareSecreteKey(String myKey) {
-        MessageDigest sha_256 = null;
+        MessageDigest sha_256;
         try {
             key = myKey.getBytes(StandardCharsets.UTF_8);
             sha_256 = MessageDigest.getInstance("SHA-256");
