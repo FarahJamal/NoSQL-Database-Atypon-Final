@@ -1,12 +1,15 @@
 version: '3'
-
 services:
-  springboot-docker-compose-app-container:
-    image: springboot-docker-compose-app:1
+  nosql:
+    container_name: nosql
     build:
-      context: ./
+      context: .
       dockerfile: Dockerfile
+    environment:
+      - PORT=80
+      - VIRTUAL_HOST=nosql.docker
     volumes:
       - /data/springboot-docker-compose-app
     ports:
-      - "4444:8082"
+      - "8081:80"
+    command: ['/bin/boot.sh']
