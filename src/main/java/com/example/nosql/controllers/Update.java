@@ -20,22 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1")
 public class Update {
-    private static Attributes getAttribute(Object key, Map<String, Object> body) {
-        if (body.get(key) instanceof List) {
-            ArrayList<Attributes> nestedAttribute = new ArrayList<>();
-            for (Object data : (ArrayList<?>) body.get(key)) {
-                LinkedHashMap<String, Object> smallAtt = (LinkedHashMap<String, Object>) data;
-                Map.Entry<String, Object> entry = smallAtt.entrySet().iterator().next();
-                Attributes currentAtt = new Attributes(entry.getKey(), entry.getValue());
-                nestedAttribute.add(currentAtt);
-            }
-            Attributes attribute = new Attributes(key.toString(), nestedAttribute);
-            return attribute;
-        } else {
-            Attributes attribute = new Attributes(key.toString(), body.get(key));
-            return attribute;
-        }
-    }
+Shared shared=new Shared();
 
     @PutMapping("/{schema}/{id}")
     public Object update(
@@ -55,7 +40,7 @@ public class Update {
         }
         List<Attributes> attributes = new ArrayList<>();
         for (Object key : body.keySet()) {
-            Attributes attribute = getAttribute(key, body);
+            Attributes attribute = shared.getAttribute(key, body);
             attributes.add(attribute);
         }
         attributes.add(idAttribute);

@@ -29,23 +29,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/")
 public class Write {
-    private static Attributes getAttribute(Object key, Map<String, Object> body) {
-        if (body.get(key) instanceof List) {
-            ArrayList<Attributes> nestedAttribute = new ArrayList<>();
-            for (Object data : (ArrayList<?>) body.get(key)) {
-                LinkedHashMap<String, Object> smallAtt = (LinkedHashMap<String, Object>) data;
-                Map.Entry<String, Object> entry = smallAtt.entrySet().iterator().next();
-                Attributes currentAtt = new Attributes(entry.getKey(), entry.getValue());
-                nestedAttribute.add(currentAtt);
-            }
-            Attributes attribute = new Attributes(key.toString(), nestedAttribute);
-            return attribute;
-        } else {
-            Attributes attribute = new Attributes(key.toString(), body.get(key));
-            return attribute;
-        }
-    }
-
+Shared shared=new Shared();
     @PostMapping("/login")
     public Object login(@RequestBody Map<String, Object> body) throws IOException, ParseException {
         String username = (String) body.get("username");
@@ -97,7 +81,7 @@ public class Write {
             return new ResponseEntity("Login first ", HttpStatus.FORBIDDEN);
         }
         for (Object key : body.keySet()) {
-            Attributes attribute = getAttribute(key, body);
+            Attributes attribute =shared.getAttribute(key, body);
             attributes.add(attribute);
         }
         DatabaseDAO dao = SchemasDAO.getInstance(schema);
